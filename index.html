@@ -1,63 +1,118 @@
-<!doctype html>
 <html>
-	<head>
-		<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width" />
-		<title>Training App</title>
-		<link rel="stylesheet" href="assets/css/master.css" type="text/css" media="screen" />
-		
-		<script src="phonegap.js" type="text/javascript" charset="utf-8"></script>
-		
-		<script src="assets/js/xui.js" type="text/javascript" charset="utf-8"></script>
-		
-		<script src="assets/js/lawnchair/adaptors/LawnchairAdaptorHelpers.js" type="text/javascript" charset="utf-8"></script>
-		
-		<script src="assets/js/lawnchair/adaptors/DOMStorageAdaptor.js" type="text/javascript" charset="utf-8"></script>
-		
-		<script src="assets/js/lawnchair/adaptors/WebkitSQLiteAdaptor.js" type="text/javascript" charset="utf-8"></script>
-		
-		<script src="assets/js/lawnchair/Lawnchair.js" type="text/javascript" charset="utf-8"></script>
-		
-		<script src="assets/js/dsl.js" type="text/javascript" charset="utf-8"></script>
-		
-		<script src="assets/js/app.js" type="text/javascript" charset="utf-8"></script>
-		
-	</head>
-	<body>
- 		<div id="title_bar">Phone<strong>Gap</strong> Training App</div>
+    <head>
+    	<script src="phonegap.js" ></script>
+        <script>
+            // thumbs.js touch events simulation
+            (function(b){try{document.createEvent("TouchEvent");return}catch(d){}var c={mousedown:"touchstart",mouseup:"touchend",mousemove:"touchmove"};b.addEventListener("load",function(){for(var e in c){document.body.addEventListener(e,function(h){var g=a(c[h.type],h);h.target.dispatchEvent(g);var f=h.target["on"+c[h.type]];if(typeof f==="function"){f(h)}},false)}},false);var a=function(f,h){var g=document.createEvent("MouseEvents");g.initMouseEvent(f,h.bubbles,h.cancelable,h.view,h.detail,h.screenX,h.screenY,h.clientX,h.clientY,h.ctrlKey,h.altKey,h.shiftKey,h.metaKey,h.button,h.relatedTarget);return g}})(window);
+            
+            var MouseEventSpeedTest = function() {
+                /*
+                this.eventNames = {
+                    start: 'mousedown',
+                    end:   'mouseup',
+                    move:  'mousemove'
+                };
+                */
+                
+                this.eventNames = {
+                    start: 'touchstart',
+                    end:   'touchend',
+                    move:  'touchmove'
+                };
+            
+                             
+                this.canvas = document.getElementsByTagName('canvas')[0];
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.context = this.canvas.getContext('2d');
+                
+                this.context.lineWidth = 10;
+                this.context.lineCap = 'round';
+                this.context.lineJoin = 'round';
+                
+                this.canvas.addEventListener(this.eventNames.start, this.handleMouseDown.bind(this));
+                this.canvas.addEventListener(this.eventNames.end, this.handleMouseUp.bind(this));
 
-		<div id="welcome" class="view">
-		  <div class="app_button" id="map_button">Show My Location</div>
-  	      <div class="app_button" id="settings_button">Settings</div>
-		</div>
+                this.events = [];
+                this.frequency = 0;
+                
+                this.bufferSize = 50;
+                
+                this.lastDraw = 0;
+                this.fps = 0;
+                this.mouseEvent = null;
+                
+                setInterval(this.update.bind(this), 1000/ 100); // Maximum event frequency
+                setInterval(this.draw.bind(this), 1000 / 60);  // fps to draw
+                
+            };
+            
+            MouseEventSpeedTest.prototype = {
+                handleMouseDown: function(event) {
+                    this.handleMouseMove = this.handleMouseMove.bind(this);
+                    this.canvas.addEventListener(this.eventNames.move, this.handleMouseMove)
+                },
+                
+                handleMouseUp: function(event) {
+                    this.mouseEvent = null;
+                    this.canvas.removeEventListener(this.eventNames.move, this.handleMouseMove)
+                },
+                
+                handleMouseMove: function(event) {
+                    this.mouseEvent = event;                     
+                },
+                
+                update: function() {
+                    var length,
+                        i;
+                        
+                    if (this.mouseEvent != null) {
+                        if (this.mouseEvent != this.events[0]) {
+                            this.events.unshift(this.mouseEvent);
+                            this.events.length = this.events.length > this.bufferSize ? this.bufferSize : this.events.length;
+                            
+                            length = this.events.length;
+    
+                            if (length > 1) {
+                                this.frequency =  1000 / ((this.events[0].timeStamp - this.events[length - 1].timeStamp) / (length - 1) );
+                            }
+                        }
+                    } else {
+                        this.events.length = 0;
+                    }
 
-		<div id="map" class="view">
-		  <div class="map_image">
-              <img id="static_map" src="assets/img/staticmap.png">
-		  </div>
-		  <p>This is where you are</p>
-		  <div class="app_button" id="welcome_button">Go Back</div>
-		</div>
+                    
+                    
+                },
+                
+                draw: function() {
+                    var now = Date.now();
+                    
+                    this.fps = 1000 / (now - this.lastDraw);
+                    this.lastDraw = now;
+                    
+                    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    this.context.beginPath();
+                                  
+                    var length = this.events.length;
+                    
+                    for (var i=0; i<length; i++) {
+                        this.context.lineTo(this.events[i].pageX, this.events[i].pageY);
+                    }
+                    
+                    this.context.stroke();
 
-		<div id="settings" class="view">
-		  <form id="settings_form">
-		    <fieldset>
-		      <legend>Map Type</legend>
-			  <input type="radio" name="map" value="roadmap" checked>Road Map<br/>
-		      <input type="radio" name="map" value="satellite">Satellite<br/>
-		      <input type="radio" name="map" value="terrain">Terrain<br/>
-		      <input type="radio" name="map" value="hybrid">Hybrid<br/>
-		    </fieldset>
-		    <fieldset>
-		      <legend>Zoom Level</legend>
-  		      <input type="radio" name="zoom" value="10">Super Far<br/>
-  		      <input type="radio" name="zoom" value="12">Far<br/>
-  		      <input type="radio" name="zoom" value="15" checked>Normal<br/>
-  		      <input type="radio" name="zoom" value="18">Close<br/>
-  		      <input type="radio" name="zoom" value="20">Super Close<br/>
-  		     </fieldset>
-		      <button id="save_button">Save</button>
-	      </form>
-		</div>
-
-	</body>
+                    this.context.fillText('Abtastrate: ' + Math.round(this.frequency) + ' Hz', 10, 30);
+                    this.context.fillText('FPS: ' + Math.round(this.fps), 10, 60);
+                }
+            };
+        </script>
+    
+    </head>
+    
+    <body onload="new MouseEventSpeedTest()" style="margin:0">
+        <canvas>
+            
+        </canvas>
+    </body>
 </html>
