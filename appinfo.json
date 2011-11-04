@@ -1,0 +1,10 @@
+{
+    "id": "de.dachtera.mest",
+    "version": "1.0.0",
+    "vendor": "Jascha Dachtera",
+    "type": "web",
+    "main": "index.html",
+    "title": "Mouse Event Speed Test",
+    "icon": "icon.png",
+    "uiRevision": 2
+}
