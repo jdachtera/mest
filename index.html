@@ -1,6 +1,6 @@
 <html>
     <head>
-    	<script src="phonegap.js" ></script>
+        <script src="phonegap.js" ></script>
         <script>
             // thumbs.js touch events simulation
             (function(b){try{document.createEvent("TouchEvent");return}catch(d){}var c={mousedown:"touchstart",mouseup:"touchend",mousemove:"touchmove"};b.addEventListener("load",function(){for(var e in c){document.body.addEventListener(e,function(h){var g=a(c[h.type],h);h.target.dispatchEvent(g);var f=h.target["on"+c[h.type]];if(typeof f==="function"){f(h)}},false)}},false);var a=function(f,h){var g=document.createEvent("MouseEvents");g.initMouseEvent(f,h.bubbles,h.cancelable,h.view,h.detail,h.screenX,h.screenY,h.clientX,h.clientY,h.ctrlKey,h.altKey,h.shiftKey,h.metaKey,h.button,h.relatedTarget);return g}})(window);
@@ -29,6 +29,7 @@
                 this.context.lineWidth = 10;
                 this.context.lineCap = 'round';
                 this.context.lineJoin = 'round';
+                this.context.font = "23pt Arial";
                 
                 this.canvas.addEventListener(this.eventNames.start, this.handleMouseDown.bind(this));
                 this.canvas.addEventListener(this.eventNames.end, this.handleMouseUp.bind(this));
@@ -43,7 +44,7 @@
                 this.mouseEvent = null;
                 
                 setInterval(this.update.bind(this), 1000/ 100); // Maximum event frequency
-                setInterval(this.draw.bind(this), 1000 / 60);  // fps to draw
+                setInterval(this.draw.bind(this), 1000 / 30);  // fps to draw
                 
             };
             
@@ -102,8 +103,8 @@
                     
                     this.context.stroke();
 
-                    this.context.fillText('Abtastrate: ' + Math.round(this.frequency) + ' Hz', 10, 30);
-                    this.context.fillText('FPS: ' + Math.round(this.fps), 10, 60);
+                    this.context.fillText('Abtastrate: ' + Math.round(this.frequency) + ' Hz', 10, 50);
+                    this.context.fillText('FPS: ' + Math.round(this.fps), 10, 100);
                 }
             };
         </script>
